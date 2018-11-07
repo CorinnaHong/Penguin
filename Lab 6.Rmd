@@ -42,7 +42,6 @@ penguins2 <- penguins %>%
   select(-species) %>% # Take out the column species
   filter(sex == "FEMALE") # filter female data from sex column
   
-  
 ```
 
 - Exploratory graphs
@@ -56,22 +55,17 @@ penguins2 <- penguins %>%
 hists <- ggplot(penguins2, aes(x= flipper_length)) +
   geom_histogram(aes(fill = common_name)) +
   facet_wrap(~common_name)
-
 hists
-
 
 
 qq <- ggplot(penguins2, aes(sample = flipper_length)) +
   geom_qq()+
   facet_wrap(~common_name)
-
 qq
-
 
 
 # Levene's test for equal variances (>2 groups). If you have two gorups, use the F-test for equal variances
 # We'll use the function leveneTest from the 'car' package
-
 # H0: Variances are equal
 # HA: Variances are NOT equal
 
@@ -81,7 +75,6 @@ penguin_levene
 # We retain the null hypothesis of equal variances (p = 0.06)
 
 
-
 # What are the actual variances?
 
 variance_table <- penguins2 %>% 
@@ -89,10 +82,36 @@ variance_table <- penguins2 %>%
   summarize(
     variance = var(flipper_length)
   )
-
 variance_table
+```
+
+3. One-way ANOVA
+
+Single factor: common_name (species)
+Number of levels in the factor: 3 (Chinstrap, Gentoo, Adelie)
+Random variable: flipper_length (mm)
+
+Is there a significant diference in mean flipper length (mm) for female Chinstrap, Gentoo, and Adelie penguins?
+
+```{r}
+
+# HO: Mean flipper length across all species are equal
+# HA: AT LEAST two means differ significantly
+
+penguin_aov <- aov(flipper_length ~ common_name, data = penguins2) # COmpare means of this random variable, grouped by factor, from this data
+summary(penguin_aov) # Use summary() to get it to tell you more information
+
+# P-Value: If we take samples from these three gorups and they come form populations with the same mean fliper lenght, there is almost a 0% chance that we are going to get sample means at least this different by random chance
+
+# At least two samples were taken from populations with different means. Which ones are different?
 
 
+# Post-hoc using Tukey's HSD
+
+penguin_ph <- TukeyHSD(penguin_aov)
+penguin_ph
 
 ```
+
+Mean flipper lengths for Adelie, Chinstrap, Gentoo penguins are significantly different (F(df) = statistic, p < 0.001, $\alpha$ = 0.05) with post-hoc Tukey's HSD, $\alpha = 0.05$
 
